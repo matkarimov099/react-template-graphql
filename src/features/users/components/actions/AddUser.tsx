@@ -17,7 +17,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useCreateUserOperation } from "@/features/users/hooks/use-users";
 import type { UserCreate } from "@/features/users/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon } from "lucide-react";
@@ -25,6 +24,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { userCreateSchema } from "@/features/users/schema/users.schema.ts";
+import { useCreateUser } from "@/features/users/hooks/use-users.ts";
 
 export function AddUser() {
   const [open, setOpen] = useState(false);
@@ -39,26 +39,21 @@ export function AddUser() {
     },
   });
 
-  const { createUser, loading } = useCreateUserOperation();
+  const { createUser, loading } = useCreateUser();
 
-  const onSubmit = async (data: UserCreate) => {
-    try {
-      const result = await createUser(data);
-
-      if (result.success) {
-        // Show success message
+  const onSubmit = (data: UserCreate) => {
+    createUser({
+      variables: { input: data },
+      onCompleted: () => {
         toast.success(`User "${data.name}" created successfully`);
-
-        // Reset form and close dialog
         form.reset();
         setOpen(false);
-      } else {
-        toast.error(result.error || "Failed to create user");
-      }
-    } catch (error) {
-      console.error("Create user failed:", error);
-      toast.error("Failed to create user. Please try again.");
-    }
+      },
+      onError: (error) => {
+        console.error("Create user failed:", error);
+        toast.error("Failed to create user. Please try again.");
+      },
+    });
   };
 
   return (

@@ -58,7 +58,8 @@ export function useAuthOperations() {
 		try {
 			const refreshToken = localStorage.getItem('refreshToken');
 			if (!refreshToken) {
-				throw new Error('No refresh token available');
+				console.log('No refresh token found in localStorage');
+				return null;
 			}
 
 			const result = await refreshTokenMutation({

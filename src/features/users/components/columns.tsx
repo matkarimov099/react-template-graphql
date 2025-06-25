@@ -1,9 +1,9 @@
 import { DataTableColumnHeader } from "@/components/data-table/column-header";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox.tsx";
-import type { User } from "@/features/users/graphql/users.graphql";
 import type { ColumnDef } from "@tanstack/react-table";
 import { DataTableRowActions } from "./row-actions";
+import type {User} from "@/features/users/types.ts";
 
 export const getColumns = (
   handleRowDeselection: ((rowId: string) => void) | null | undefined

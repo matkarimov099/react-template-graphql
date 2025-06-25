@@ -7,8 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useBulkDeleteUsersOperation } from "@/features/users/hooks/use-users";
 import { toast } from "sonner";
+import { useBulkDeleteUsers } from "@/features/users/hooks/use-users.ts";
 
 interface BulkDeletePopupProps {
   open: boolean;
@@ -28,7 +28,7 @@ export function BulkDeleteUser({
   resetSelection,
 }: BulkDeletePopupProps) {
   // Mavjud hook dan foydalanish
-  const { bulkDeleteUsers, loading } = useBulkDeleteUsersOperation();
+  const { bulkDeleteUsers, loading } = useBulkDeleteUsers();
 
   // Use allSelectedIds if available, otherwise fallback to selectedUsers ids
   const idsToDelete = allSelectedIds || selectedUsers.map((user) => user.id);
@@ -43,21 +43,27 @@ export function BulkDeleteUser({
     }
 
     try {
-      const result = await bulkDeleteUsers(idsToDelete as string[]);
+      const result = await bulkDeleteUsers({
+        variables: { ids: idsToDelete.map((id) => String(id)) },
+      });
 
-      if (result.success) {
+      if (result.data?.bulkDeleteUsers?.success) {
         // Show success message
         toast.success(
           itemCount === 1
             ? "User deleted successfully"
-            : `${result.deletedCount || itemCount} users deleted successfully`
+            : `${
+                result.data.bulkDeleteUsers.deletedCount || itemCount
+              } users deleted successfully`
         );
 
         // Reset selection and close dialog
         resetSelection();
         onOpenChange(false);
       } else {
-        toast.error(result.error || "Failed to delete users");
+        toast.error(
+          result.data?.bulkDeleteUsers?.message || "Failed to delete users"
+        );
       }
     } catch (error) {
       console.error("Bulk delete failed:", error);

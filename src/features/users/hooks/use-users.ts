@@ -1,193 +1,124 @@
+import { useMutation, useQuery } from '@apollo/client';
 import {
-	useGetUsers,
-	useGetUserById,
-	useCreateUser,
-	useUpdateUser,
-	useDeleteUser,
-	useBulkDeleteUsers,
-} from '../services/users.service';
-import type { 
-	UserFilterInput, 
-	CreateUserInput, 
-	UpdateUserInput 
+	BULK_DELETE_USERS_MUTATION,
+	CREATE_USER_MUTATION,
+	DELETE_USER_MUTATION,
+	GET_USERS_QUERY,
+	GET_USER_BY_ID_QUERY,
+	UPDATE_USER_MUTATION,
+	GET_USER_STATS_QUERY,
 } from '../graphql/users.graphql';
+import type {
+	CreateUserInput,
+	UpdateUserInput,
+	UserFilterInput,
+	BulkDeleteUsersResponse,
+	CreateUserResponse,
+	DeleteUserResponse,
+	UpdateUserResponse,
+	UserResponse,
+	UsersResponse,
+	UserStatsResponse,
+} from '../types';
 
-// Get users with filtering
-export function useUsersData(filter: UserFilterInput) {
-	const { data, loading, error, refetch } = useGetUsers(filter);
-	
-	return {
-		users: data?.users.data || [],
-		total: data?.users.total || 0,
-		loading,
-		error,
-		refetch,
-	};
+// Foydalanuvchilarni olish uchun hook
+export function useGetUsers(input: UserFilterInput) {
+	return useQuery<UsersResponse, { input: UserFilterInput }>(GET_USERS_QUERY, {
+		variables: { input },
+		fetchPolicy: 'cache-and-network',
+		errorPolicy: 'all',
+	});
 }
 
-// Get single user by ID
-export function useUserData(id: string) {
-	const { data, loading, error, refetch } = useGetUserById(id);
-	
-	return {
-		user: data?.user,
-		loading,
-		error,
-		refetch,
-	};
+// Bitta foydalanuvchini olish uchun hook
+export function useGetUserById(id: string) {
+	return useQuery<UserResponse, { id: string }>(GET_USER_BY_ID_QUERY, {
+		variables: { id },
+		skip: !id,
+		errorPolicy: 'all',
+	});
 }
 
-// Create user operations
-export function useCreateUserOperation() {
-	const [createUserMutation, { loading, error }] = useCreateUser();
-	
-	const createUser = async (input: CreateUserInput) => {
-		try {
-			const result = await createUserMutation({
-				variables: { input },
-			});
+// Foydalanuvchi statistikasini olish uchun hook
+export function useGetUserStats() {
+	return useQuery<UserStatsResponse>(GET_USER_STATS_QUERY, {
+		fetchPolicy: 'cache-and-network',
+		errorPolicy: 'all',
+	});
+}
 
-			if (result.data?.createUser) {
-				return {
-					success: true,
-					user: result.data.createUser,
-				};
-			}
-
-			return {
-				success: false,
-				error: 'Failed to create user',
-			};
-		} catch (error) {
-			return {
-				success: false,
-				error: error instanceof Error ? error.message : 'Failed to create user',
-			};
+// Yangi foydalanuvchi yaratish uchun hook
+export function useCreateUser() {
+	const [createUserMutation, result] = useMutation<CreateUserResponse, { input: CreateUserInput }>(
+		CREATE_USER_MUTATION,
+		{
+			refetchQueries: [{ query: GET_USERS_QUERY, variables: { input: {} } }],
+			awaitRefetchQueries: true,
+			onError: (error) => {
+				console.error('Create user error:', error);
+			},
 		}
-	};
+	);
 
 	return {
-		createUser,
-		loading,
-		error,
+		createUser: createUserMutation,
+		loading: result.loading,
+		error: result.error,
+		data: result.data,
 	};
 }
 
-// Update user operations
-export function useUpdateUserOperation() {
-	const [updateUserMutation, { loading, error }] = useUpdateUser();
-	
-	const updateUser = async (id: string, input: UpdateUserInput) => {
-		try {
-			const result = await updateUserMutation({
-				variables: { id, input },
-			});
-
-			if (result.data?.updateUser) {
-				return {
-					success: true,
-					user: result.data.updateUser,
-				};
-			}
-
-			return {
-				success: false,
-				error: 'Failed to update user',
-			};
-		} catch (error) {
-			return {
-				success: false,
-				error: error instanceof Error ? error.message : 'Failed to update user',
-			};
+// Foydalanuvchini o'zgartirish uchun hook
+export function useUpdateUser() {
+	const [updateUserMutation, result] = useMutation<UpdateUserResponse, { id: string; input: UpdateUserInput }>(
+		UPDATE_USER_MUTATION,
+		{
+			refetchQueries: [{ query: GET_USERS_QUERY, variables: { input: {} } }],
+			awaitRefetchQueries: true,
 		}
-	};
+	);
 
 	return {
-		updateUser,
-		loading,
-		error,
+		updateUser: updateUserMutation,
+		loading: result.loading,
+		error: result.error,
+		data: result.data,
 	};
 }
 
-// Delete user operations
-export function useDeleteUserOperation() {
-	const [deleteUserMutation, { loading, error }] = useDeleteUser();
-	
-	const deleteUser = async (id: string) => {
-		try {
-			const result = await deleteUserMutation({
-				variables: { id },
-			});
-
-			if (result.data?.deleteUser.success) {
-				return {
-					success: true,
-					message: result.data.deleteUser.message,
-				};
-			}
-
-			return {
-				success: false,
-				error: result.data?.deleteUser.message || 'Failed to delete user',
-			};
-		} catch (error) {
-			return {
-				success: false,
-				error: error instanceof Error ? error.message : 'Failed to delete user',
-			};
+// Foydalanuvchini o'chirish uchun hook
+export function useDeleteUser() {
+	const [deleteUserMutation, result] = useMutation<DeleteUserResponse, { id: string }>(
+		DELETE_USER_MUTATION,
+		{
+			refetchQueries: [{ query: GET_USERS_QUERY, variables: { input: {} } }],
+			awaitRefetchQueries: true,
 		}
-	};
+	);
 
 	return {
-		deleteUser,
-		loading,
-		error,
+		deleteUser: deleteUserMutation,
+		loading: result.loading,
+		error: result.error,
+		data: result.data,
+		success:result
 	};
 }
 
-// Bulk delete users operations
-export function useBulkDeleteUsersOperation() {
-	const [bulkDeleteUsersMutation, { loading, error }] = useBulkDeleteUsers();
-	
-	const bulkDeleteUsers = async (ids: string[]) => {
-		try {
-			const result = await bulkDeleteUsersMutation({
-				variables: { ids },
-			});
-
-			if (result.data?.bulkDeleteUsers.success) {
-				return {
-					success: true,
-					message: result.data.bulkDeleteUsers.message,
-					deletedCount: result.data.bulkDeleteUsers.deletedCount,
-				};
-			}
-
-			return {
-				success: false,
-				error: result.data?.bulkDeleteUsers.message || 'Failed to delete users',
-			};
-		} catch (error) {
-			return {
-				success: false,
-				error: error instanceof Error ? error.message : 'Failed to delete users',
-			};
+// Ko'p foydalanuvchilarni o'chirish uchun hook
+export function useBulkDeleteUsers() {
+	const [bulkDeleteUsersMutation, result] = useMutation<BulkDeleteUsersResponse, { ids: string[] }>(
+		BULK_DELETE_USERS_MUTATION,
+		{
+			refetchQueries: [{ query: GET_USERS_QUERY, variables: { input: {} } }],
+			awaitRefetchQueries: true,
 		}
-	};
+	);
 
 	return {
-		bulkDeleteUsers,
-		loading,
-		error,
+		bulkDeleteUsers: bulkDeleteUsersMutation,
+		loading: result.loading,
+		error: result.error,
+		data: result.data,
 	};
 }
-
-// Re-export individual service hooks for direct usage
-export {
-	useGetUsers,
-	useGetUserById,
-	useCreateUser,
-	useUpdateUser,
-	useDeleteUser,
-	useBulkDeleteUsers,
-} from '../services/users.service';

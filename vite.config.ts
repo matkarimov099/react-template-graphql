@@ -22,6 +22,8 @@ export default defineConfig({
             if (id.includes('sonner')) return 'sonner';
             if (id.includes('zod')) return 'zod';
             if (id.includes('@hookform/resolvers')) return 'zod';
+            if (id.includes('graphql')) return 'graphql';
+            if (id.includes('@apollo/client')) return 'apollo-client';
 
             // Core React libraries
             if (id.includes('react') || id.includes('react-dom')) {

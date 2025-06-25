@@ -5,7 +5,8 @@ export async function refreshToken() {
 	try {
 		const refreshToken = localStorage.getItem('refreshToken');
 		if (!refreshToken) {
-			throw new Error('No refresh token available');
+			console.log('No refresh token found in localStorage');
+			return null;
 		}
 
 		const result = await apolloClient.mutate<RefreshTokenResponse>({
@@ -34,7 +35,7 @@ export async function refreshToken() {
 	} catch (error: unknown) {
 		console.error('Refresh token error:', error);
 		
-		// Clear tokens and redirect to login
+		// Clear tokens and redirect to log in
 		localStorage.removeItem('accessToken');
 		localStorage.removeItem('refreshToken');
 		

@@ -1,11 +1,11 @@
 import { DataTable } from "@/components/data-table/data-table.tsx";
 import { getColumns } from "@/features/users/components/columns.tsx";
-import type { User } from "@/features/users/graphql/users.graphql";
 import { useExportConfig } from "@/features/users/utils/config.ts";
 import { usersTableConfig } from "@/features/users/utils/table-config.ts";
-import { useUsersData } from "../utils/data-fetching";
+import { useUsersData } from "../utils/data-fetching.ts";
 import { lazy } from "react";
 import { LazyComponent } from "@/components/common/lazy-component.tsx";
+import type {User} from "@/features/users/types.ts";
 
 const ToolbarOptions = lazy(
   () => import("@/features/users/components/toolbar-options.tsx")

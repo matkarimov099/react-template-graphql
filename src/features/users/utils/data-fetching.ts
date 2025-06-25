@@ -1,7 +1,7 @@
-import { useGetUsers } from '@/features/users/services/users.service';
 import { useDebounce } from '@/hooks/use-debounce.tsx';
 import { useState } from 'react';
 import type { PaginationState, SortingState } from '@tanstack/react-table';
+import {useGetUsers} from "@/features/users/hooks/use-users.ts";
 
 export function useUsersData() {
 	const [pagination, setPagination] = useState<PaginationState>({
@@ -47,9 +47,9 @@ export function useUsersData() {
 	};
 
 	const {
-		data: usersResponse,
-		loading: isFetching,
-		refetch,
+        data: usersResponse,
+        loading: isFetching,
+        refetch
 	} = useGetUsers({
 		page: currentPage,
 		limit: pageSize,
