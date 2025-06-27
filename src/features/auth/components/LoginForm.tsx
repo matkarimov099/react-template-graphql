@@ -17,41 +17,47 @@ import { getUserFromToken } from "@/lib/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronRightIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { LocalizedNavLink } from "@/components/common/localized-nav-link";
 import { toast } from "sonner";
-import { useAuthOperations } from "@/features/auth/hooks/use-auth";
+import { useLogin } from "@/features/auth/hooks/use-auth";
 
 export const LoginForm = () => {
-  const { login, isLoginLoading } = useAuthOperations();
+  const { login, loading } = useLogin();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
   });
 
   function onFormSubmit(values: LoginSchema) {
-    login({
-      phone: values.phone.replace(/([() -])/g, ""),
-      password: values.password,
-    })
-      .then((result) => {
-        if (result.success && result.tokens) {
-          // Tokens are already saved by the login hook
-          const user = getUserFromToken() ?? null;
-          if (user) {
-            navigate("/");
-          } else {
-            navigate("/auth/login");
-          }
+    void login({
+      variables: {
+        input: {
+          phone: values.phone.replace(/\s/g, ""), // Telefon raqamni formatlash
+          password: values.password,
+        },
+      },
+      onCompleted: async () => {
+        const user = getUserFromToken();
+        if (user) {
+          toast.success("Xush kelibsiz!");
+
+          // Redirect logikasi: foydalanuvchi qayerdan kelgan bo'lsa o'sha yerga yo'naltirish
+          const from = (location.state as { from?: { pathname: string } })?.from
+            ?.pathname;
+          const redirectTo = from || "/"; // Agar from yo'q bo'lsa, asosiy sahifaga
+
+          navigate(redirectTo, { replace: true });
         } else {
-          toast.error(result.error || "Profilga kirishda xatolik yuz berdi!");
+          toast.error("Kirishda xatolik yuz berdi");
         }
-      })
-      .catch((error) => {
-        console.error("Login error:", error);
-        toast.error("Profilga kirishda xatolik yuz berdi!");
-      });
+      },
+      onError: (error) => {
+        toast.error(error.message || "Kirishda xatolik yuz berdi");
+      },
+    });
   }
 
   return (
@@ -124,7 +130,7 @@ export const LoginForm = () => {
             </div>
             <Button
               rightIcon={<ChevronRightIcon />}
-              loading={isLoginLoading}
+              loading={loading}
               type="submit"
               size="xl"
               className="cursor-pointer group/btn relative block px-6 py-2 bg-black text-white dark:hover:bg-black rounded-lg font-bold transform hover:-translate-y-0.5 transition duration-300"

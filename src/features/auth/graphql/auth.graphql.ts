@@ -6,17 +6,6 @@ export const LOGIN_MUTATION = gql`
 		login(input: $input) {
 			accessToken
 			refreshToken
-			user {
-				id
-				phone
-				firstname
-				lastname
-				role {
-					id
-					name
-					privileges
-				}
-			}
 		}
 	}
 `;
@@ -55,55 +44,3 @@ export const GET_CURRENT_USER_QUERY = gql`
 	}
 `;
 
-// Input Types
-export interface LoginInput {
-	phone: string;
-	password: string;
-}
-
-// Response Types
-export interface LoginResponse {
-	login: {
-		accessToken: string;
-		refreshToken: string;
-		user: {
-			id: string;
-			phone: string;
-			firstname: string;
-			lastname: string;
-			role: {
-				id: string;
-				name: string;
-				privileges: string[];
-			};
-		};
-	};
-}
-
-export interface LogoutResponse {
-	logout: {
-		success: boolean;
-		message: string;
-	};
-}
-
-export interface RefreshTokenResponse {
-	refreshToken: {
-		accessToken: string;
-		refreshToken: string;
-	};
-}
-
-export interface CurrentUserResponse {
-	me: {
-		id: string;
-		phone: string;
-		firstname: string;
-		lastname: string;
-		role: {
-			id: string;
-			name: string;
-			privileges: string[];
-		};
-	};
-}

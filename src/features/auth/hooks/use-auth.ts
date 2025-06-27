@@ -1,115 +1,52 @@
-import { useLogin, useLogout, useCurrentUser, useRefreshToken } from '../services/auth.service';
-import type { LoginInput } from '../graphql/auth.graphql';
+import {useMutation, useQuery} from "@apollo/client";
+import type {CurrentUserResponse, LoginInput, LoginResponse} from "@/features/auth/types.ts";
+import {GET_CURRENT_USER_QUERY, LOGIN_MUTATION, LOGOUT_MUTATION} from "@/features/auth/graphql/auth.graphql.ts";
 
-// Auth hooks for authentication operations
-export function useAuthOperations() {
-	const { data: currentUserData, loading: userLoading, error: userError } = useCurrentUser();
-	const [loginMutation, { loading: loginLoading, error: loginError }] = useLogin();
-	const [logoutMutation, { loading: logoutLoading }] = useLogout();
-	const [refreshTokenMutation, { loading: refreshLoading }] = useRefreshToken();
-
-	const login = async (credentials: LoginInput) => {
-		try {
-			const result = await loginMutation({
-				variables: {
-					input: credentials,
-				},
-			});
-
-			if (result.data?.login.accessToken) {
-				// Tokens are automatically saved in the mutation hook
-				return {
-					success: true,
-					user: result.data.login.user,
-					tokens: {
-						accessToken: result.data.login.accessToken,
-						refreshToken: result.data.login.refreshToken,
-					},
-				};
+export function useLogin() {
+	const [loginMutation, {loading, error, data}] = useMutation<LoginResponse, {input: LoginInput}>(LOGIN_MUTATION, {
+		onCompleted: (data) => {
+			// Token saqlash
+			if (data.login.accessToken) {
+				localStorage.setItem('accessToken', data.login.accessToken);
+				localStorage.setItem('refreshToken', data.login.refreshToken);
 			}
-			
-			return {
-				success: false,
-				error: 'Login failed',
-			};
-		} catch (error) {
-			return {
-				success: false,
-				error: error instanceof Error ? error.message : 'Login failed',
-			};
+		},
+		onError: (error) => {
+			console.error("Login error:", error);
 		}
-	};
-
-	const logout = async () => {
-		try {
-			await logoutMutation();
-			localStorage.removeItem('accessToken');
-			localStorage.removeItem('refreshToken');
-			return { success: true };
-		} catch (error) {
-			return {
-				success: false,
-				error: error instanceof Error ? error.message : 'Logout failed',
-			};
-		}
-	};
-
-	const refreshToken = async () => {
-		try {
-			const refreshToken = localStorage.getItem('refreshToken');
-			if (!refreshToken) {
-				console.log('No refresh token found in localStorage');
-				return null;
-			}
-
-			const result = await refreshTokenMutation({
-				variables: {
-					input: { refreshToken },
-				},
-			});
-
-			if (result.data?.refreshToken.accessToken) {
-				return {
-					success: true,
-					tokens: {
-						accessToken: result.data.refreshToken.accessToken,
-						refreshToken: result.data.refreshToken.refreshToken,
-					},
-				};
-			}
-
-			return {
-				success: false,
-				error: 'Token refresh failed',
-			};
-		} catch (error) {
-			return {
-				success: false,
-				error: error instanceof Error ? error.message : 'Token refresh failed',
-			};
-		}
-	};
-
+	})
 	return {
-		// Data
-		currentUser: currentUserData?.me,
-		
-		// Loading states
-		isUserLoading: userLoading,
-		isLoginLoading: loginLoading,
-		isLogoutLoading: logoutLoading,
-		isRefreshLoading: refreshLoading,
-		
-		// Errors
-		userError,
-		loginError,
-		
-		// Operations
-		login,
-		logout,
-		refreshToken,
+		login: loginMutation,
+		loading,
+		error,
+		data
 	};
 }
 
-// Re-export individual hooks for direct usage
-export { useLogin, useLogout, useCurrentUser, useRefreshToken } from '../services/auth.service';
+export function  useLogout() {
+	const [logoutMutation, {loading, error, data}] = useMutation(LOGOUT_MUTATION, {
+		onCompleted: () => {
+			// Tokenlarni o'chirish
+			localStorage.removeItem('accessToken');
+			localStorage.removeItem('refreshToken');
+		},
+		onError: (error) => {
+			console.error("Logout error:", error);
+		}
+	});
+	return {
+		logout: logoutMutation,
+		loading,
+		error,
+		data
+	};
+}
+
+//create useGetCurrentUser hook query
+export function useGetCurrentUser(){
+	return useQuery<CurrentUserResponse>(GET_CURRENT_USER_QUERY, {
+		fetchPolicy: "cache-and-network",
+		errorPolicy: "all",
+		skip: !localStorage.getItem('accessToken'), // Token yo'q bo'lsa skip qilish
+	});
+}

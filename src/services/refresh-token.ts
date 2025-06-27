@@ -1,5 +1,6 @@
 import { apolloClient } from '@/plugins/apollo-client';
-import { REFRESH_TOKEN_MUTATION, type RefreshTokenResponse } from '@/features/auth/graphql/auth.graphql';
+import { REFRESH_TOKEN_MUTATION  } from '@/features/auth/graphql/auth.graphql';
+import type {RefreshTokenResponse} from "@/features/auth/types.ts";
 
 export async function refreshToken() {
 	try {
