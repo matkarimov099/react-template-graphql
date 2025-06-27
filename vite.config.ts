@@ -45,8 +45,6 @@ export default defineConfig({
   optimizeDeps: {
     exclude: [
         '@tanstack/react-table',
-        "graphql",
-        '@apollo/client',
     ]
   },
   server: {
