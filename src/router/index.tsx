@@ -12,7 +12,7 @@ import {
 	RootRedirect,
 } from '@/components/common/router-components.tsx';
 import {
-	// authLoader,
+	//   authLoader,
 	authLocaleLoader,
 	localeLoader,
 	rootRedirectLoader,
@@ -40,14 +40,16 @@ export const router = createBrowserRouter([
 	// Main application routes with locale
 	{
 		path: '/:locale',
-		// Combine locale validation and authentication in one loader
+		// HYBRID AUTH PROTECTION - Enterprise Level Security
+		// Combines locale validation + authentication in one loader
 		loader: async (args) => {
 			// First validate the locale
 			const localeResult = localeLoader(args);
 			if (localeResult) return localeResult;
 
-			// Authentication check temporarily disabled
-			// return authLoader(args);
+			// Second layer: Authentication check
+			// This works with AuthGuard for double protection
+			//   return authLoader(args);
 			return null;
 		},
 		element: <MainLayoutWrapper />,

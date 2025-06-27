@@ -1,6 +1,6 @@
 import { apolloClient } from '@/plugins/apollo-client';
-import { REFRESH_TOKEN_MUTATION  } from '@/features/auth/graphql/auth.graphql';
-import type {RefreshTokenResponse} from "@/features/auth/types.ts";
+import { REFRESH_TOKEN_MUTATION } from '@/features/auth/graphql/auth.graphql';
+import type { RefreshTokenResponse } from '@/features/auth/types.ts';
 
 export async function refreshToken() {
 	try {
@@ -28,24 +28,27 @@ export async function refreshToken() {
 
 		localStorage.setItem('accessToken', session.accessToken);
 		localStorage.setItem('refreshToken', session.refreshToken);
-		
+
 		return {
 			accessToken: session.accessToken,
 			refreshToken: session.refreshToken,
 		};
 	} catch (error: unknown) {
 		console.error('Refresh token error:', error);
-		
+
 		// Clear tokens and redirect to log in
 		localStorage.removeItem('accessToken');
 		localStorage.removeItem('refreshToken');
-		
+
 		// Check if it's a GraphQL error with specific error codes
 		if (isGraphQLError(error)) {
-			if (error.graphQLErrors?.some(e => 
-				e.extensions?.code === 'UNAUTHENTICATED' || 
-				e.extensions?.code === 'FORBIDDEN'
-			)) {
+			if (
+				error.graphQLErrors?.some(
+					(e) =>
+						e.extensions?.code === 'UNAUTHENTICATED' ||
+						e.extensions?.code === 'FORBIDDEN',
+				)
+			) {
 				alert('Your session has expired!');
 				window.location.href = '/auth/login';
 			}
@@ -55,7 +58,7 @@ export async function refreshToken() {
 				window.location.href = '/auth/login';
 			}
 		}
-		
+
 		return null;
 	}
 }
@@ -64,8 +67,8 @@ function isGraphQLError(
 	error: unknown,
 ): error is { graphQLErrors: Array<{ extensions?: { code?: string } }> } {
 	return (
-		typeof error === 'object' && 
-		error !== null && 
+		typeof error === 'object' &&
+		error !== null &&
 		'graphQLErrors' in error &&
 		Array.isArray((error as { graphQLErrors: unknown }).graphQLErrors)
 	);
@@ -75,10 +78,11 @@ function isNetworkError(
 	error: unknown,
 ): error is { networkError: { statusCode: number } } {
 	return (
-		typeof error === 'object' && 
-		error !== null && 
+		typeof error === 'object' &&
+		error !== null &&
 		'networkError' in error &&
 		typeof (error as { networkError: unknown }).networkError === 'object' &&
-		'statusCode' in (error as { networkError: { statusCode: unknown } }).networkError
+		'statusCode' in
+			(error as { networkError: { statusCode: unknown } }).networkError
 	);
 }

@@ -65,22 +65,29 @@ function SidebarProvider({
 	const open = openProp ?? _open;
 	const setOpen = useCallback(
 		(value: boolean | ((value: boolean) => boolean)) => {
-			const openState = typeof value === 'function' ? value(open) : value;
-			if (setOpenProp) {
-				setOpenProp(openState);
-			} else {
-				_setOpen(openState);
-			}
+			// openProp o‘rnatilgan bo‘lsa, uni eʼtiborga olishimiz kerak.
+			// Shuning uchun avvalgi `_open` state yoki `openProp`ni function ichida o‘qiymiz:
+			_setOpen((prev) => {
+				// Agar openProp bo‘lsa, avval shu, bo‘lmasa prev:
+				const currentOpen = openProp ?? prev;
+				const openState =
+					typeof value === 'function' ? value(currentOpen) : value;
 
-			// This sets the cookie to keep the sidebar state.
-			document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+				if (setOpenProp) {
+					setOpenProp(openState);
+				}
+				document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+
+				return openState;
+			});
 		},
-		[setOpenProp],
+		[openProp, setOpenProp], // `open` o‘rniga `openProp` + `setOpenProp` kifoya
 	);
 
 	// Helper to toggle the sidebar.
 	const toggleSidebar = useCallback(() => {
 		return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
+		// Note: setOpenMobile is a setState function and is stable by React, doesn't need to be in deps
 	}, [isMobile, setOpen]);
 
 	// Adds a keyboard shortcut to toggle the sidebar.
@@ -99,12 +106,9 @@ function SidebarProvider({
 		return () => window.removeEventListener('keydown', handleKeyDown);
 	}, [toggleSidebar]);
 
-	// We add a state so that we can do data-state="expanded" or "collapsed".
-	// This makes it easier to style the sidebar with Tailwind classes.
-	const state = open ? ('expanded' as const) : ('collapsed' as const);
-
-	const contextValue = useMemo<SidebarContextProps>(
-		() => ({
+	const contextValue = useMemo<SidebarContextProps>(() => {
+		const state = open ? ('expanded' as const) : ('collapsed' as const);
+		return {
 			state,
 			open,
 			setOpen,
@@ -112,9 +116,8 @@ function SidebarProvider({
 			openMobile,
 			setOpenMobile,
 			toggleSidebar,
-		}),
-		[setOpen, isMobile, openMobile, toggleSidebar],
-	);
+		};
+	}, [open, setOpen, isMobile, openMobile, toggleSidebar]);
 
 	return (
 		<SidebarContext.Provider value={contextValue}>

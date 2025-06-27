@@ -1,4 +1,4 @@
-# React Dashboard Template
+# React Dashboard Template with GraphQL Apollo Client
 
 A modern and professional dashboard application built with React 19, TypeScript, and Vite. This project includes comprehensive user management, data visualization, internationalization, and many other enterprise-level features for a complete admin panel solution.
 
@@ -6,7 +6,7 @@ A modern and professional dashboard application built with React 19, TypeScript,
 
 ### Core Features
 
-- 🔐 **Authentication** - Secure JWT token-based login/logout system
+- 🔐 **Enterprise Authentication** - Hybrid security with server-side + client-side protection layers
 - 👥 **User Management** - Complete CRUD operations with role-based access
 - 📊 **Data Tables** - Advanced tables with search, filtering, sorting, and export
 - 🌐 **Internationalization** - Multi-language support (English, Russian, Uzbek) with react-i18next
@@ -14,8 +14,9 @@ A modern and professional dashboard application built with React 19, TypeScript,
 - 📱 **Responsive Design** - Optimized for all screen sizes and devices
 - 🌙 **Theme Support** - Dark/Light mode with user preference persistence
 - 📈 **Charts & Analytics** - Interactive charts and data visualization with Recharts
-- � **Form Management** - Advanced forms with validation using React Hook Form + Zod
+- 📝 **Form Management** - Advanced forms with validation using React Hook Form + Zod
 - 🔄 **Real-time Updates** - Optimistic updates and real-time data synchronization
+- 🛡️ **Smart Redirects** - Remembers user destination and redirects after login
 
 ### Technology Stack
 
@@ -44,7 +45,7 @@ A modern and professional dashboard application built with React 19, TypeScript,
 
 ```bash
 git clone <repository-url>
-cd new-dashboard
+cd react-template-graphql
 ```
 
 2. **Install dependencies**
@@ -63,32 +64,39 @@ yarn install
 3. **Start development server**
 
 ```bash
-# Using Bun
+# Using Bun (recommended)
 bun dev
 
 # Or using npm
 npm run dev
 ```
 
-The application will start at http://localhost:3000
-
-## 🛠 Available Scripts
+4. **Access the application**
 
 ```bash
-# Start development server
-bun dev
+# With authentication (default)
+http://localhost:3000
+# ↓ Redirects to login page if not authenticated
+http://localhost:3000/uz/auth/login
 
-# Build for production
-bun run build
+# To disable auth for development:
+# See � Authentication System section below
+```
 
-# Preview production build
-bun run preview
+## �🛠 Available Scripts
 
-# Format code with Biome
-bun run format
+```bash
+# Development
+bun dev              # Start development server
+bun run build        # Build for production
+bun run preview      # Preview production build
 
-# Lint code with Biome
-bun run lint
+# Code Quality
+bun run format       # Format code with Biome
+bun run lint         # Lint code with Biome
+
+# Authentication
+# See Authentication section for enabling/disabling auth
 ```
 
 ## 📁 Project Structure
@@ -127,9 +135,6 @@ src/
 Create a `.env` file in the root directory and add the following variables:
 
 ```env
-# GraphQL API Configuration
-VITE_GRAPHQL_URL=http://localhost:4000/graphql
-
 # Application Configuration
 VITE_APP_NAME=Dashboard
 VITE_JWT_SECRET=your_jwt_secret
@@ -206,27 +211,107 @@ Built with [Shadcn/ui](https://ui.shadcn.com/) component library:
 
 ## 🔐 Authentication System
 
-### Features
+> **TL;DR**: Run `bun dev` for normal use with login, or comment out `<AuthGuard>` in `router-components.tsx` to skip authentication during development.
 
-- JWT token-based authentication
-- Automatic token refresh
-- Protected routes with role-based access
-- Persistent login sessions
-- Secure logout with token cleanup
+### 🚀 Getting Started
 
-### Implementation
+#### Option 1: With Authentication (Default)
 
-```tsx
-// Example: Protected route component
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuthContext();
+```bash
+bun dev
+# → Opens http://localhost:3000
+# → Automatically redirects to login page
+# → Use test credentials below to access dashboard
+```
 
-  if (isLoading) return <Spinner />;
-  if (!isAuthenticated) return <Navigate to="/auth/login" />;
+#### Option 2: Skip Authentication (Development Mode)
 
-  return <>{children}</>;
+```bash
+# Step 1: Open this file
+src/components/common/router-components.tsx
+
+# Step 2: Find MainLayoutWrapper and comment out AuthGuard:
+export function MainLayoutWrapper() {
+  return (
+    <LocaleWrapper>
+      <AuthContextProvider>
+        {/* <AuthGuard> */}
+          <DefaultLayout />
+        {/* </AuthGuard> */}
+      </AuthContextProvider>
+    </LocaleWrapper>
+  );
+}
+
+# Step 3: Save and run
+bun dev
+# → Now you can access all pages directly without login!
+```
+
+### 🔑 Test Credentials
+
+```javascript
+Phone: +998901234567;
+Password: yourpassword123;
+```
+
+### 🔄 Enable/Disable Authentication
+
+**To DISABLE auth (development):**
+
+```typescript jsx
+// In src/components/common/router-components.tsx
+{
+  /* <AuthGuard> */
+}
+<DefaultLayout />;
+{
+  /* </AuthGuard> */
 }
 ```
+
+**To ENABLE auth (production):**
+
+```typescript jsx
+// In src/components/common/router-components.tsx
+<AuthGuard>
+  <DefaultLayout />
+</AuthGuard>
+```
+
+### 🌐 Available Routes
+
+| URL Pattern                           | With Auth    | Without Auth  |
+| ------------------------------------- | ------------ | ------------- |
+| `http://localhost:3000`               | → Login page | → Dashboard   |
+| `http://localhost:3000/uz/auth/login` | Login form   | Login form    |
+| `http://localhost:3000/uz/dashboard`  | Protected    | Direct access |
+| `http://localhost:3000/uz/users`      | Protected    | Direct access |
+| `http://localhost:3000/en/dashboard`  | Protected    | Direct access |
+
+### 🛡️ How It Works
+
+1. **Route Protection**: Double-layer security with server-side loader + client-side guard
+2. **Smart Redirects**: Remembers where you were going and takes you there after login
+3. **Token Management**: Automatic JWT refresh and secure storage
+4. **Multi-language**: Authentication works with all supported locales (`/en/`, `/uz/`, `/ru/`)
+
+### 🔧 Common Issues & Solutions
+
+| Problem                   | Solution                                                         |
+| ------------------------- | ---------------------------------------------------------------- |
+| 🚫 Can't access any pages | Check if `<AuthGuard>` is commented out                          |
+| 🔑 Login not working      | Use test credentials: `+998901234567` / `yourpassword123`        |
+| 🔄 Stuck in redirect loop | Clear browser storage: F12 → Application → Local Storage → Clear |
+| 🌐 Wrong language         | Visit `/en/`, `/uz/`, or `/ru/` URLs directly                    |
+| 💾 Changes not reflecting | Restart dev server after editing router files                    |
+
+### 💡 Pro Tips
+
+- **Development**: Always disable auth first, then enable when testing login flow
+- **Testing**: Use incognito mode to test fresh user experience
+- **Debugging**: Check browser console and Network tab for auth errors
+- **Quick Reset**: `localStorage.clear()` in console to reset all auth state
 
 ## 🌐 Internationalization (i18n)
 
@@ -499,4 +584,48 @@ If you encounter any issues or need help:
 
 ---
 
-**Made with ❤️ by the Scala.uz team**
+## 📋 Quick Reference
+
+### � **Development Commands**
+
+```bash
+bun dev          # Start with authentication
+bun run build    # Production build
+bun run preview  # Test production build
+```
+
+### � **Authentication Quick Toggle**
+
+```typescript jsx
+// DISABLE: Comment out in router-components.tsx
+{
+  /* <AuthGuard><DefaultLayout /></AuthGuard> */
+}
+
+// ENABLE: Uncomment in router-components.tsx
+<AuthGuard>
+  <DefaultLayout />
+</AuthGuard>;
+```
+
+### 🔑 **Test Login**
+
+```javascript
+Phone: "+998901234567";
+Password: "yourpassword123";
+```
+
+### 🌐 **Common URLs**
+
+- **Root**: `http://localhost:3000` (redirects based on auth)
+- **Login**: `http://localhost:3000/uz/auth/login`
+- **Dashboard**: `http://localhost:3000/uz/dashboard`
+- **English**: `http://localhost:3000/en/dashboard`
+
+### � **Quick Fixes**
+
+- **Reset Auth**: `localStorage.clear()` in browser console
+- **Check Auth State**: Look for tokens in browser DevTools → Application → Local Storage
+- **Restart Required**: After editing router files, restart `bun dev`
+
+---

@@ -49,16 +49,16 @@ export function useGetUserStats() {
 
 // Yangi foydalanuvchi yaratish uchun hook
 export function useCreateUser() {
-	const [createUserMutation, result] = useMutation<CreateUserResponse, { input: CreateUserInput }>(
-		CREATE_USER_MUTATION,
-		{
-			refetchQueries: [{ query: GET_USERS_QUERY, variables: { input: {} } }],
-			awaitRefetchQueries: true,
-			onError: (error) => {
-				console.error('Create user error:', error);
-			},
-		}
-	);
+	const [createUserMutation, result] = useMutation<
+		CreateUserResponse,
+		{ input: CreateUserInput }
+	>(CREATE_USER_MUTATION, {
+		refetchQueries: [{ query: GET_USERS_QUERY, variables: { input: {} } }],
+		awaitRefetchQueries: true,
+		onError: (error) => {
+			console.error('Create user error:', error);
+		},
+	});
 
 	return {
 		createUser: createUserMutation,
@@ -70,13 +70,13 @@ export function useCreateUser() {
 
 // Foydalanuvchini o'zgartirish uchun hook
 export function useUpdateUser() {
-	const [updateUserMutation, result] = useMutation<UpdateUserResponse, { id: string; input: UpdateUserInput }>(
-		UPDATE_USER_MUTATION,
-		{
-			refetchQueries: [{ query: GET_USERS_QUERY, variables: { input: {} } }],
-			awaitRefetchQueries: true,
-		}
-	);
+	const [updateUserMutation, result] = useMutation<
+		UpdateUserResponse,
+		{ id: string; input: UpdateUserInput }
+	>(UPDATE_USER_MUTATION, {
+		refetchQueries: [{ query: GET_USERS_QUERY, variables: { input: {} } }],
+		awaitRefetchQueries: true,
+	});
 
 	return {
 		updateUser: updateUserMutation,
@@ -88,32 +88,32 @@ export function useUpdateUser() {
 
 // Foydalanuvchini o'chirish uchun hook
 export function useDeleteUser() {
-	const [deleteUserMutation, result] = useMutation<DeleteUserResponse, { id: string }>(
-		DELETE_USER_MUTATION,
-		{
-			refetchQueries: [{ query: GET_USERS_QUERY, variables: { input: {} } }],
-			awaitRefetchQueries: true,
-		}
-	);
+	const [deleteUserMutation, result] = useMutation<
+		DeleteUserResponse,
+		{ id: string }
+	>(DELETE_USER_MUTATION, {
+		refetchQueries: [{ query: GET_USERS_QUERY, variables: { input: {} } }],
+		awaitRefetchQueries: true,
+	});
 
 	return {
 		deleteUser: deleteUserMutation,
 		loading: result.loading,
 		error: result.error,
 		data: result.data,
-		success:result
+		success: result,
 	};
 }
 
 // Ko'p foydalanuvchilarni o'chirish uchun hook
 export function useBulkDeleteUsers() {
-	const [bulkDeleteUsersMutation, result] = useMutation<BulkDeleteUsersResponse, { ids: string[] }>(
-		BULK_DELETE_USERS_MUTATION,
-		{
-			refetchQueries: [{ query: GET_USERS_QUERY, variables: { input: {} } }],
-			awaitRefetchQueries: true,
-		}
-	);
+	const [bulkDeleteUsersMutation, result] = useMutation<
+		BulkDeleteUsersResponse,
+		{ ids: string[] }
+	>(BULK_DELETE_USERS_MUTATION, {
+		refetchQueries: [{ query: GET_USERS_QUERY, variables: { input: {} } }],
+		awaitRefetchQueries: true,
+	});
 
 	return {
 		bulkDeleteUsers: bulkDeleteUsersMutation,

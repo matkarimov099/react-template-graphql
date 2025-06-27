@@ -10,40 +10,40 @@ export interface User {
 }
 
 export interface UsersResponse {
-    users: {
-        data: User[];
-        total: number;
-    };
+	users: {
+		data: User[];
+		total: number;
+	};
 }
 
 export interface UserResponse {
-    user: User;
+	user: User;
 }
 
 export interface CreateUserResponse {
-    createUser: {
-        id: string;
-        message: string;
-    };
+	createUser: {
+		id: string;
+		message: string;
+	};
 }
 
 export interface UpdateUserResponse {
-    updateUser: User;
+	updateUser: User;
 }
 
 export interface DeleteUserResponse {
-    deleteUser: {
-        success: boolean;
-        message: string;
-    };
+	deleteUser: {
+		success: boolean;
+		message: string;
+	};
 }
 
 export interface BulkDeleteUsersResponse {
-    bulkDeleteUsers: {
-        success: boolean;
-        message: string;
-        deletedCount: number;
-    };
+	bulkDeleteUsers: {
+		success: boolean;
+		message: string;
+		deletedCount: number;
+	};
 }
 
 export interface UserCreate {
@@ -81,15 +81,15 @@ export interface UpdateUserInput {
  * User statistics interface
  */
 export interface UserStats {
-    totalUsers: number;
-    activeUsers: number;
-    newUsersThisWeek: number;
-    newUsersThisMonth: number;
+	totalUsers: number;
+	activeUsers: number;
+	newUsersThisWeek: number;
+	newUsersThisMonth: number;
 }
 
 /**
  * Response for user statistics query
  */
 export interface UserStatsResponse {
-    userStats: UserStats;
+	userStats: UserStats;
 }

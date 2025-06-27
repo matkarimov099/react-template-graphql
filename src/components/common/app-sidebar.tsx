@@ -16,9 +16,11 @@ import {
 	SidebarMenuItem,
 } from '@/components/ui/sidebar.tsx';
 import { useAuthContext } from '@/hooks/use-auth-context.ts';
+import { useLogout } from '@/features/auth/hooks/use-auth.ts';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-	const { logout, currentUser } = useAuthContext();
+	const { user } = useAuthContext();
+	const { logout } = useLogout();
 
 	return (
 		<Sidebar variant="inset" {...props}>
@@ -45,7 +47,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				<NavSecondary className="mt-auto" />
 			</SidebarContent>
 			<SidebarFooter>
-				<NavUser user={currentUser} logout={logout} />
+				<NavUser user={user} logout={logout} />
 			</SidebarFooter>
 		</Sidebar>
 	);
