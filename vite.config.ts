@@ -42,6 +42,13 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    exclude: [
+        '@tanstack/react-table',
+        "graphql",
+        '@apollo/client',
+    ]
+  },
   server: {
     port: 3000,
     host: true,

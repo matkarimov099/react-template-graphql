@@ -66,10 +66,10 @@ export function RootRedirect() {
 	const token = localStorage.getItem('accessToken');
 
 	if (token) {
-		// Logged in user -> go to dashboard
+		// Logged-in user -> go to dashboard
 		return <Navigate to={`/${preferredLocale}/reports`} replace />;
 	}
 
-	// Not logged in -> go to login
+	// Not logged in -> go to log in
 	return <Navigate to={`/${preferredLocale}/auth/login`} replace />;
 }
